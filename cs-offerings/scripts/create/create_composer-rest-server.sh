@@ -20,7 +20,11 @@ Parse_Arguments() {
 			--business-network-card)
 				shift
 				COMPOSER_CARD=$1
-				;;	
+				;;
+			--port)
+				shift
+				PORT_NUMBER=$1
+				;;
 		esac
 		shift
 	done
@@ -35,18 +39,32 @@ else
 fi
 
 if [ -z ${COMPOSER_CARD} ]; then
-	echo "Usage: $0 --business-network-card <business-network-card> [--paid]"
+	echo "Usage: $0 --business-network-card <business-network-card> --port <port_number> [--paid]"
+    exit 1
+fi
+
+if [ -z ${PORT_NUMBER} ]; then
+	echo "Usage: $0 --business-network-card <business-network-card> --port <port_number> [--paid]"
     exit 1
 fi
 
 echo "Preparing yaml file for create composer-rest-server"
-sed -e "s/%COMPOSER_CARD%/${COMPOSER_CARD}/g" ${KUBECONFIG_FOLDER}/composer-rest-server.yaml.base > ${KUBECONFIG_FOLDER}/composer-rest-server.yaml
+rm ${KUBECONFIG_FOLDER}/composer-rest-server.yaml
+cat ${KUBECONFIG_FOLDER}/composer-rest-server.yaml.base | \
+sed 's/%COMPOSER_CARD%/'${COMPOSER_CARD}'/g;' | \
+sed 's/%PORT_NUMBER%/'${PORT_NUMBER}'/g;' \
+> ${KUBECONFIG_FOLDER}/composer-rest-server.yaml
+
+
+
+echo "Preparing yaml file for create composer-rest-server-services"
+sed -e "s/%PORT_NUMBER%/${PORT_NUMBER}/g" ${KUBECONFIG_FOLDER}/composer-rest-server-services-${OFFERING}.yaml.base > ${KUBECONFIG_FOLDER}/composer-rest-server-services-${OFFERING}.yaml
 
 echo "Creating composer-rest-server pod"
 echo "Running: kubectl create -f ${KUBECONFIG_FOLDER}/composer-rest-server.yaml"
 kubectl create -f ${KUBECONFIG_FOLDER}/composer-rest-server.yaml
 
-if [ "$(kubectl get svc | grep composer-rest-server | wc -l | awk '{print $1}')" == "0" ]; then
+if [ "$(kubectl get svc | grep composer-rest-server-${PORT_NUMBER} | wc -l | awk '{print $1}')" == "0" ]; then
     echo "Creating composer-rest-server service"
     echo "Running: kubectl create -f ${KUBECONFIG_FOLDER}/composer-rest-server-services-${OFFERING}.yaml"
     kubectl create -f ${KUBECONFIG_FOLDER}/composer-rest-server-services-${OFFERING}.yaml

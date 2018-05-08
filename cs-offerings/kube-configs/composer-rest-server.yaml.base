@@ -2,20 +2,20 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: composer-rest-server
+  name: composer-rest-server-%PORT_NUMBER%
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        name: composer-rest-server
+        name: composer-rest-server-%PORT_NUMBER%
     spec:
       volumes:
       - name: composer-card-store
         persistentVolumeClaim:
           claimName: composer-pvc
       containers:
-      - name: composer-rest-server
+      - name: composer-rest-server-%PORT_NUMBER%
         image: hyperledger/composer-rest-server:0.19.4
         imagePullPolicy: Always
         env:

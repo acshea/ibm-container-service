@@ -199,7 +199,7 @@ spec:
         - name: CORE_PEER_GOSSIP_BOOTSTRAP
           value: blockchain-org1peer1:30110
         - name: CORE_PEER_GOSSIP_ORGLEADER
-          value: "true"
+          value: "false"
         - name: CORE_PEER_GOSSIP_SKIPHANDSHAKE
           value: "true"
         - name: CORE_PEER_COMMITTER_ENABLED
@@ -287,7 +287,7 @@ spec:
         - name: CORE_PEER_GOSSIP_BOOTSTRAP
           value: blockchain-org2peer1:30210
         - name: CORE_PEER_GOSSIP_ORGLEADER
-          value: "true"
+          value: "false"
         - name: CORE_PEER_GOSSIP_SKIPHANDSHAKE
           value: "true"
         - name: CORE_PEER_COMMITTER_ENABLED
@@ -350,7 +350,7 @@ spec:
     spec:
       containers:
       - name: couchdb1
-        image: hyperledger/fabric-couchdb:x86_64-1.1.0-preview
+        image: hyperledger/fabric-couchdb:x86_64-0.4.6
         env:
         - name: DB_URL
           value: http://localhost:5984/member_db
@@ -369,7 +369,7 @@ spec:
     spec:
       containers:
       - name: couchdb2
-        image: hyperledger/fabric-couchdb:x86_64-1.1.0-preview
+        image: hyperledger/fabric-couchdb:x86_64-0.4.6
         env:
         - name: DB_URL
           value: http://localhost:5984/member_db

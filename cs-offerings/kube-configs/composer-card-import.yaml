@@ -16,35 +16,83 @@ spec:
   - name: composer-card-import
     image: hyperledger/composer-cli:0.19.4
     imagePullPolicy: Always
-    command: ["sh", "-c", "echo $K8S_PROFILE > connection.json && composer card create -f PeerAdmin.card -p connection.json -u PeerAdmin -r PeerAdmin -r ChannelAdmin -c /shared/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem -k /shared/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/key.pem && composer card import -f PeerAdmin.card"]
+    command: ["sh", "-c", "composer card delete -c PeerAdmin@hlfv1 && echo $K8S_PROFILE > connection.json && composer card create -f PeerAdmin.card -p connection.json -u PeerAdmin -r PeerAdmin -r ChannelAdmin -c /shared/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem -k /shared/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/key.pem && composer card import -f PeerAdmin.card"]
     env:
     - name: K8S_PROFILE
       value: >
         {
-          "type": "hlfv1",
           "name": "hlfv1",
-          "orderers": [
-              {
+          "x-type": "hlfv1",
+          "x-commitTimeout": 3000,
+          "version": "1.0.0",
+          "client": {
+              "organization": "Org1",
+              "connection": {
+                  "timeout": {
+                      "peer": {
+                          "endorser": "3000",
+                          "eventHub": "3000",
+                          "eventReg": "3000"
+                      },
+                      "orderer": "3000"
+                  }
+              }
+          },
+          "channels": {
+              "channel1": {
+                  "orderers": [
+                      "blockchain-orderer"
+                  ],
+                  "peers": {
+                      "blockchain-org1peer1": {},
+                      "blockchain-org2peer1": {}
+                  }
+              }
+          },
+          "organizations": {
+              "Org1": {
+                  "mspid": "Org1MSP",
+                  "peers": [
+                      "blockchain-org1peer1"
+                  ],
+                  "certificateAuthorities": [
+                      "CA1"
+                  ]
+              },
+             "Org2": {
+                  "mspid": "Org2MSP",
+                  "peers": [
+                      "blockchain-org2peer1"
+                  ],
+                  "certificateAuthorities": [
+                      "CA1"
+                  ]
+              }
+          },
+          "orderers": {
+              "blockchain-orderer": {
                   "url": "grpc://blockchain-orderer:31010"
               }
-          ],
-          "ca": {
-              "url": "http://blockchain-ca:30054",
-              "name": "CA1"
           },
-          "peers": [
-              {
-                  "requestURL": "grpc://blockchain-org1peer1:30110",
-                  "eventURL": "grpc://blockchain-org1peer1:30111"
+          "peers": {
+              "blockchain-org1peer1": {
+                  "url": "grpc://blockchain-org1peer1:30110",
+                  "eventUrl": "grpc://blockchain-org1peer1:30111"
+              },
+             "blockchain-org2peer1": {
+                  "url": "grpc://blockchain-org2peer1:30210",
+                  "eventUrl": "grpc://blockchain-org2peer1:30211"
               }
-          ],
-          "channel": "channel1",
-          "mspID": "Org1MSP",
-          "timeout": 300
+          },
+          "certificateAuthorities": {
+              "CA1": {
+                  "url": "http://blockchain-ca:30054",
+                  "caName": "CA1"
+              }
+          }
         }
     volumeMounts:
     - name: composer-card-store
       mountPath: /home/composer/.composer
     - name: shared
       mountPath: /shared
-
